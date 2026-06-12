@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nyl</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #000;
+  --green:  #00cc44;
+  --green-bright: #00ff66;
+  --blue:   #00aacc;
+  --purple: #cc44aa;
+  --amber:  #ccaa00;
+  --text:   #888;
+  --dim:    #333;
+  --border: #1a1a1a;
+  --font: 'Share Tech Mono', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+  font-size: 13px;
+}
+
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,100,0.013) 2px, rgba(0,255,100,0.013) 4px);
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* ── BOOT SCREEN ── */
+#boot {
+  position: fixed; inset: 0;
+  background: #000;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+#boot-term {
+  width: 100%; max-width: 640px;
+  font-size: clamp(0.7rem, 2vw, 0.82rem);
+}
+.boot-line {
+  opacity: 0;
+  margin-bottom: 3px;
+  white-space: pre-wrap;
+}
+.boot-line.visible { opacity: 1; }
+.b-dim    { color: #2a4a2a; }
+.b-prefix { color: #1a5a1a; }
+.b-ok     { color: var(--green); }
+.b-warn   { color: var(--amber); }
+.b-info   { color: var(--blue); }
+.b-bright { color: var(--green-bright); letter-spacing: 2px; font-weight: bold; }
+.b-div    { color: #111; }
+.boot-cursor {
+  display: inline-block; width: 8px; height: 13px;
+  background: var(--green-bright); vertical-align: bottom;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink { 50% { opacity:0; } }
+
+/* ── LAYOUT ── */
+main {
+  position: relative; z-index: 1;
+  max-width: 860px; margin: 0 auto;
+  padding: 0 2rem 6rem;
+}
+
+.page-content { opacity: 0; transition: opacity 0.6s; }
+.page-content.shown { opacity: 1; }
+
+/* ── HERO ── */
+.hero { padding: 4rem 0 2.5rem; }
+
+.ascii-logo {
+  color: var(--green-bright);
+  font-size: clamp(0.5rem, 1.2vw, 0.72rem);
+  line-height: 1.2;
+  white-space: pre;
+  margin-bottom: 2rem;
+  text-shadow: 0 0 20px rgba(0,255,100,0.4);
+}
+
+.hero-status {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.72rem; color: var(--dim);
+  margin-bottom: 1rem;
+}
+.status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green); animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.status-acc { color: var(--green); }
+
+.hero-desc {
+  font-size: 0.85rem; color: #666;
+  margin-bottom: 2rem; max-width: 480px; line-height: 1.9;
+}
+.hero-desc .hl { color: var(--blue); }
+
+nav.links { display: flex; gap: 1.2rem; flex-wrap: wrap; margin-bottom: 3rem; }
+nav.links a {
+  color: var(--dim); text-decoration: none;
+  font-size: 0.75rem; letter-spacing: 1px;
+  transition: color 0.2s;
+  border: 1px solid #111; padding: 5px 12px;
+}
+nav.links a:hover { color: var(--green); border-color: #1a6b1a; }
+
+/* ── TERMINAL BLOCK ── */
+.terminal {
+  border: 1px solid var(--border);
+  padding: 1.2rem 1.4rem;
+  margin-bottom: 3.5rem;
+  background: #020202;
+}
+.term-bar {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 1rem; padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--border);
+}
+.dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.dot-r{background:#331010;} .dot-y{background:#332a00;} .dot-g{background:#003311;}
+.term-title { color: var(--dim); font-size: 0.68rem; margin-left: 6px; letter-spacing: 1px; }
+
+.tl { margin-bottom: 3px; font-size: 0.78rem; }
+.p  { color: var(--green); }
+.pd { color: var(--blue); }
+.c  { color: var(--text); }
+.o  { color: var(--dim); padding-left: 1rem; display: block; font-size: 0.78rem; }
+.o .v  { color: var(--purple); }
+.o .ok { color: var(--green); }
+.o .k  { color: var(--blue); }
+
+/* ── SECTION ── */
+.section-header { margin-bottom: 1.4rem; border-left: 2px solid var(--green); padding-left: 12px; }
+.section-label {
+  font-size: 0.65rem; color: var(--dim);
+  letter-spacing: 0.18em; text-transform: uppercase;
+}
+.section-label::before { content: '// '; color: #1a1a1a; }
+.section-title { font-size: 0.9rem; color: #555; margin-top: 3px; }
+
+/* ── PROJECT GRID ── */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1px;
+  margin-bottom: 4rem;
+  border: 1px solid var(--border);
+}
+
+.card {
+  padding: 1.4rem 1.5rem;
+  background: #020202;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  transition: background 0.2s;
+}
+.card::before {
+  content: '';
+  position: absolute; top: 0; left: 0;
+  width: 2px; height: 0;
+  background: var(--card-color, var(--green));
+  transition: height 0.3s ease;
+}
+.card:hover { background: #040404; }
+.card:hover::before { height: 100%; }
+
+.proj-id   { font-size: 0.6rem; color: var(--dim); margin-bottom: 0.5rem; letter-spacing: 0.1em; }
+.proj-name {
+  font-size: 0.88rem; font-weight: bold;
+  color: var(--card-color, var(--green));
+  margin-bottom: 0.5rem;
+  letter-spacing: 1px;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--card-color, #00ff66) 35%, transparent);
+}
+.proj-desc { font-size: 0.72rem; color: #444; margin-bottom: 1rem; line-height: 1.8; }
+
+.tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 1rem; }
+.tag {
+  font-size: 0.6rem; padding: 2px 7px;
+  border: 1px solid #1a1a1a;
+  color: var(--dim);
+  letter-spacing: 0.5px;
+}
+
+.proj-links { display: flex; gap: 1rem; }
+.proj-link {
+  font-size: 0.68rem; color: var(--dim); text-decoration: none; transition: color 0.2s;
+  letter-spacing: 1px;
+}
+.proj-link::before { content: '['; color: #1a1a1a; }
+.proj-link::after  { content: ']'; color: #1a1a1a; }
+.proj-link:hover { color: var(--card-color, var(--green)); }
+
+/* ── CONTACT ── */
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1px;
+  margin-bottom: 2rem;
+  border: 1px solid var(--border);
+}
+.contact-item {
+  padding: 1rem 1.1rem;
+  text-decoration: none;
+  display: block;
+  background: #020202;
+  transition: background 0.2s;
+  border-right: 1px solid var(--border);
+}
+.contact-item:hover { background: #040404; }
+.contact-label { font-size: 0.6rem; color: var(--dim); margin-bottom: 4px; letter-spacing: 2px; }
+.contact-val   { font-size: 0.75rem; color: var(--purple); }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding-top: 1.2rem;
+  font-size: 0.65rem;
+  color: var(--dim);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;
+}
+footer .acc { color: var(--green); }
+
+/* ── SCANLINE FLICKER on load ── */
+@keyframes flicker {
+  0%{opacity:1}2%{opacity:0.8}4%{opacity:1}8%{opacity:0.9}10%{opacity:1}
+  40%{opacity:1}42%{opacity:0.85}44%{opacity:1}
+}
+.page-content.shown { animation: flicker 0.6s ease forwards; }
+</style>
+</head>
+<body>
+
+<!-- BOOT SCREEN -->
+<div id="boot">
+  <div id="boot-term" aria-live="polite"></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="page-content" id="page">
+<main>
+
+  <section class="hero" id="hero">
+    <div class="ascii-logo">
+▗▖  ▗▖▄   ▄ █ 
+▐▛▚▖▐▌█   █ █ 
+▐▌ ▝▜▌ ▀▀▀█ █ 
+▐▌  ▐▌▄   █ █ 
+       ▀▀▀    </div>
+
+    <div class="hero-status">
+      <div class="status-dot"></div>
+      <span>connecté en tant que <span class="status-acc">tête de n'oeil</span></span>
+    </div>
+
+    <p class="hero-desc">Un endroit pour poser mes <span class="hl">projets</span>, mes <span class="hl">tests</span> et tout le bordel que je fais.</p>
+
+    <nav class="links">
+      <a href="#trucs">trucs</a>
+      <a href="#contact">contact</a>
+      <a href="https://github.com/Nylulu" target="_blank">github</a>
+    </nav>
+  </section>
+
+  <!-- TERMINAL -->
+  <div class="terminal">
+    <div class="term-bar">
+      <div class="dot dot-r"></div>
+      <div class="dot dot-y"></div>
+      <div class="dot dot-g"></div>
+      <span class="term-title">Nya // session active</span>
+    </div>
+    <p class="tl"><span class="p">[NYL]</span> <span class="pd">~</span> <span class="c">cat miaou.txt</span></p>
+    <span class="o">Salut. Je fais des trucs. Parfois du code, parfois autre chose.</span>
+  </div>
+
+  <!-- TRUCS -->
+  <section id="trucs">
+    <div class="section-header">
+      <p class="section-label">trucs</p>
+      <h2 class="section-title">des bidules que j'ai fait</h2>
+    </div>
+
+    <div class="project-grid">
+
+      <article class="card" style="--card-color: #00cc44">
+        <p class="proj-id">01 · dev</p>
+        <h3 class="proj-name">Myune_sys</h3>
+        <p class="proj-desc">Un sorte d'écosystème d'outils et programmes en tous genres pensé pour mon utilisation personnelle et n'ayant aucun but de distribution</p>
+        <div class="tags">
+          <span class="tag">Python</span>
+          <span class="tag">HTML</span>
+          <span class="tag">CSS</span>
+          <span class="tag">JS</span>
+          <span class="tag">C++</span>
+          <span class="tag">...</span>
+        </div>
+      </article>
+
+      <article class="card" style="--card-color: #b2ae77">
+        <p class="proj-id">02 · html</p>
+        <h3 class="proj-name">Manou.anniversaire</h3>
+        <p class="proj-desc">Un calendrier simple montrant les anniversaires des membres du serveur de Manou_Build</p>
+        <div class="proj-links">
+          <a class="proj-link" href="https://nylulu.github.io/manou_anniversaire/">Voir</a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="section-header">
+      <p class="section-label">contact</p>
+      <h2 class="section-title">où me trouver</h2>
+    </div>
+    <div class="contact-grid">
+      <a class="contact-item" href="mailto:bazardenylu@gmail.com">
+        <p class="contact-label">EMAIL</p>
+        <p class="contact-val">bazardenylu@gmail.com</p>
+      </a>
+      <a class="contact-item" href="https://github.com/Nylulu" target="_blank" rel="noopener">
+        <p class="contact-label">GITHUB</p>
+        <p class="contact-val">Nylu</p>
+      </a>
+      <a class="contact-item" href="https://x.com/Nylumy" target="_blank" rel="noopener">
+        <p class="contact-label">X</p>
+        <p class="contact-val">@Nylumy</p>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <span>// c bon les pateaupate. Btw, soyez de bonnes personnes et jouez a <span class="acc">Titanfall 2</span>.</span>
+    <span>2026 · NYL</span>
+  </footer>
+
+</main>
+</div>
+
+<script>
+const bootLines = [
+  { text: 'NYL-SYS BOOT SEQUENCE v1.0.0', cls: 'b-dim', delay: 0 },
+  { text: '────────────────────────────────────────────', cls: 'b-div', delay: 80 },
+  { text: '[  SYS  ] Détection mémoire................. OK', cls: 'b-ok',  delay: 120 },
+  { text: '[  SYS  ] Chargement noyau.................. OK', cls: 'b-ok',  delay: 100 },
+  { text: '[  FS   ] Montage filesystem /home/nyl...... OK', cls: 'b-ok',  delay: 110 },
+  { text: '[  NET  ] Interface réseau.................. OK', cls: 'b-ok',  delay: 90  },
+  { text: '[  MOD  ] Module scanlines.................. OK', cls: 'b-ok',  delay: 80  },
+  { text: '[  MOD  ] Chargement police mono............ OK', cls: 'b-ok',  delay: 100 },
+  { text: '[  PRJ  ] Indexation projets................ OK', cls: 'b-ok',  delay: 140 },
+  { text: '[  SEC  ] Vérification protocoles........... ', cls: 'b-dim', delay: 80, suffix: true },
+  { text: 'OK', cls: 'b-ok', inline: true, delay: 420 },
+  { text: '────────────────────────────────────────────', cls: 'b-div', delay: 100 },
+  { text: 'PROTOCOLE 1 — Lier avec le Pilote.......... OK', cls: 'b-info', delay: 140 },
+  { text: 'PROTOCOLE 2 — Accomplir la Mission......... OK', cls: 'b-info', delay: 140 },
+  { text: 'PROTOCOLE 3 — Protéger le Pilote........... OK', cls: 'b-info', delay: 140 },
+  { text: '────────────────────────────────────────────', cls: 'b-div', delay: 100 },
+  { text: 'ACCÈS AUTORISÉ — BIENVENUE, TÊTE DE N\'OEIL', cls: 'b-bright', delay: 200 },
+  { text: '', delay: 500 },
+];
+
+const term = document.getElementById('boot-term');
+let lineEls = [];
+
+function addLine(cfg) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      if (cfg.inline && lineEls.length) {
+        const last = lineEls[lineEls.length - 1];
+        const s = document.createElement('span');
+        s.className = cfg.cls || '';
+        s.textContent = cfg.text;
+        last.appendChild(s);
+      } else {
+        const el = document.createElement('div');
+        el.className = 'boot-line visible ' + (cfg.cls || '');
+        el.textContent = cfg.text;
+        term.appendChild(el);
+        lineEls.push(el);
+      }
+      resolve();
+    }, cfg.delay || 0);
+  });
+}
+
+async function runBoot() {
+  let cumulative = 0;
+  for (const line of bootLines) {
+    cumulative += line.delay || 0;
+    await addLine(line);
+  }
+
+  await new Promise(r => setTimeout(r, 280));
+  const boot = document.getElementById('boot');
+  boot.style.transition = 'opacity 0.5s';
+  boot.style.opacity = '0';
+  setTimeout(() => {
+    boot.style.display = 'none';
+    document.getElementById('page').classList.add('shown');
+  }, 500);
+}
+
+runBoot();
+</script>
+</body>
+</html>
